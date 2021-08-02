@@ -1,0 +1,21 @@
+<?php
+
+namespace App;
+
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Model;
+use Laravel\Lumen\Auth\Authorizable;
+
+class User extends Model implements AuthenticatableContract, AuthorizableContract
+{
+    use Authenticatable, Authorizable;
+
+    protected $fillable = [
+        'user_type_id','phone_number', 'user_type_id', 'password', 'name', 'address', 'token'
+    ];
+    protected $hidden = [
+        'password','id'
+    ];
+}
