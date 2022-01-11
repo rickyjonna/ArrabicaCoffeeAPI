@@ -9,11 +9,6 @@ use Validator, Input, Redirect;
 
 class ProductCategoryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function insertproductcategory(Request $request)
     {
         if ($request->isMethod('post')) 
@@ -26,7 +21,7 @@ class ProductCategoryController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -43,26 +38,17 @@ class ProductCategoryController extends Controller
                 $insert = Product_category::create($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Produk Kategori Telah Dibuat  ",
+                    "message" => "InsertProductCategory - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            }catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
         };
     }
@@ -82,7 +68,7 @@ class ProductCategoryController extends Controller
 
     public function updateproductcategory($id, Request $request)
     {
-        if ($request->isMethod('patch')) 
+        if ($request->isMethod('post')) 
         {
             $validator = Validator::make($request->all(), [
                 'information' => 'required'
@@ -92,7 +78,7 @@ class ProductCategoryController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -109,27 +95,18 @@ class ProductCategoryController extends Controller
                 $oldproductcategory -> update($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Product Kategori Telah Diperbaharui",
+                    "message" => "EditProductCategory - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);     
-            }catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
-            };   
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
+            };
         };
     }
 
@@ -140,12 +117,12 @@ class ProductCategoryController extends Controller
         if (!$product_category) {
             $data = [
                 "message" => "error / data not found",
-                "code" => 404
+                "code" => 200
             ];
         } else {
             $product_category->delete();
             $data = [
-                "message" => "success deleted",
+                "message" => "DeleteProductCategory - Success",
                 "code" => 200
             ];
         };

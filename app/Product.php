@@ -13,12 +13,12 @@ class Product extends Model implements AuthenticatableContract, AuthorizableCont
     use Authenticatable, Authorizable;
 
     protected $fillable = [
-        'merchant_id', 'partner_id', 'product_category_id',
+        'id','merchant_id', 'partner_id', 'product_category_id',
         'name', 'price', 'discount', 'editable', 'isformula', 'hasstock', 'information'
     ];
 
     protected $hidden = [
-        'id'
+    
     ];
 
 }

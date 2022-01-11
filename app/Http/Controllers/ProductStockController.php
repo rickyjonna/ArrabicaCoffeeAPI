@@ -9,21 +9,20 @@ use Validator, Input, Redirect;
 
 class ProductStockController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function index()
     {
-        $getPost = Product_stock::leftjoin('products', 'products.id', '=', 'product_stock.product_id')
+        $stock = Product_stock::leftjoin('products', 'products.id', '=', 'product_stock.product_id')
         ->addselect('products.name as Produk', 'amount as Jumlah') 
         ->OrderBy("products.id", "ASC")
         ->get();
 
+        $result = [
+            "stock" => $stock
+        ];
+
         $out = [
             "message" => "List Stock",
-            "results" => $getPost
+            "results" => $result
         ];
         return response()->json($out, 200);
     }

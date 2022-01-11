@@ -13,11 +13,11 @@ class Invoice extends Model implements AuthenticatableContract, AuthorizableCont
     use Authenticatable, Authorizable;
 
     protected $fillable = [
-        'merchant_id','order_id', 'user_id', 'payment_id', 'discount', 'tax', 'total', 'status', 'phone_number', 'email'
+        'id','merchant_id', 'order_id', 'user_id', 'payment_id', 'status', 'discount', 'tax', 'total', 'phone_number', 'email'
     ];
 
     protected $hidden = [
-        'id'
+        
     ];
 
 }

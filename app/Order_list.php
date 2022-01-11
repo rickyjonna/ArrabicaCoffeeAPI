@@ -15,10 +15,10 @@ class Order_list extends Model implements AuthenticatableContract, AuthorizableC
     protected $table = "order_list";
 
     protected $fillable = [
-        'order_id','merchant_id', 'product_id', 'user_id', 'order_list_status_id', 'amount', 'discount'
+        'id', 'order_id','merchant_id', 'product_id', 'user_id', 'order_list_status_id', 'amount'
     ];
 
     protected $hidden = [
-        'id'
+        
     ];
 }

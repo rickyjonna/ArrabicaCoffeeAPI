@@ -26,6 +26,7 @@ if(!function_exists('make_product')) {
                 'name' => $name,
                 'price' => $price,
                 'discount' => $discount,
+                'editable' => 1,
                 'isformula' => $isformula,
                 'hasstock' => $hasstock,
                 'information' => $information

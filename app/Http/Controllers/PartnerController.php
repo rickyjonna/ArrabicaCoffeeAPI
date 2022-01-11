@@ -9,11 +9,6 @@ use Validator, Input, Redirect;
 
 class PartnerController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function insertpartner(Request $request)
     {
         if ($request->isMethod('post')) 
@@ -28,7 +23,7 @@ class PartnerController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -47,26 +42,17 @@ class PartnerController extends Controller
                 $insert = Partner::create($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Rekan Telah Dibuat",
+                    "message" => "InsertPartner - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            } catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
         }
     }
@@ -87,7 +73,7 @@ class PartnerController extends Controller
 
     public function updatepartner($id, Request $request)
     {
-        if ($request->isMethod('patch')) 
+        if ($request->isMethod('post')) 
         {
             $validator = Validator::make($request->all(), 
             [
@@ -98,7 +84,7 @@ class PartnerController extends Controller
             if ($validator->fails()) {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
             return response()->json($out, $out['code']);
             };
@@ -118,28 +104,18 @@ class PartnerController extends Controller
                 $updatepartner = $oldpartner -> update($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Rekan Berhasil Diperbaharui",
+                    "message" => "EditPartner - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            }catch(\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                    ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
-            };        
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
+            };       
         };
     }
 
@@ -150,12 +126,12 @@ class PartnerController extends Controller
         if (!$partner) {
             $data = [
                 "message" => "error / data not found",
-                "code" => 404
+                "code" => 200
             ];
         } else {
             $partner->delete();
             $data = [
-                "message" => "success deleted",
+                "message" => "DeletePartner - Success",
                 "code" => 200
             ];
         };

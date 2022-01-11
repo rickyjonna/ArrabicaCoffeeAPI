@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Invoice;
+use App\Order;
 use App\Order_list;
 use App\Product;
 use App\Income;
@@ -12,11 +13,6 @@ use Validator, Input, Redirect;
 
 class InvoiceController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function insertinvoice(Request $request)
     {
         if ($request->isMethod('post')) 
@@ -26,19 +22,18 @@ class InvoiceController extends Controller
                 'order_id' => 'required|integer',
                 'user_id' => 'required|integer',
                 'payment_id' => 'required|integer',
-                'discount' => 'required|max:4',
-                'tax' => 'required|max:4',
+                'discount' => 'required|integer',
+                'tax' => 'required|integer',
                 'phone_number' => 'nullable|max:20',
-                "email" => 'nullable|max:20'
+                'email' => 'nullable|max:20'
             ]);
             $messages = $validator->errors();
             if ($validator->fails()) 
             {
                 $out = [
-                    "message" => $messages->first(),
-                    "code"   => 400
+                    "message" => $messages->first()
                 ];
-                return response()->json($out, $out['code']);
+                return response()->json($out, 200);
             };
 
             DB::beginTransaction();
@@ -56,6 +51,11 @@ class InvoiceController extends Controller
                 ->leftjoin('products','products.id','=','order_list.product_id')
                 ->sum(DB::raw('(products.price - (products.price * products.discount / 100)) * order_list.amount'));
 
+                //clearing old invoice
+                $delete_oldinvoice = Invoice::where('order_id','=',$order_id)
+                ->where('status','=','UNPAID')
+                ->delete();
+
                 //making invoice
                 $data = [
                     'merchant_id' => $merchant_id,
@@ -70,100 +70,105 @@ class InvoiceController extends Controller
                     'email' => $email
                 ];
                 $insert = Invoice::create($data);
-                $invoicetotal = $totalprice - ($totalprice * $discount / 100) + ($totalprice * $tax / 100);
+                
+                //get invoice id
+                $invoice_id =Invoice::max('id');
+                $invoicetotal = $totalprice - $discount + $tax;
+                $results = [
+                    "invoice_id" => $invoice_id,
+                    "invoice_total" => $invoicetotal
+                ];
+
                 DB::commit();
                 $out  = [
                     "message" => "Invoice Berhasil Dibuat",
-                    "code" => 200
+                    "results" => $results
                 ];               
-                return response()->json($out,$out['code']);
-            } catch (\exception $e){
+                return response()->json($out,200);
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                    ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
-            }; 
-        };
-    }//endfunc
-
-    public function updateinvoice($id, Request $request)
-    {
-        if ($request->isMethod('patch')) 
-        {
-            $validator = Validator::make($request->all(), [
-                'information' => 'nullable'                
-            ]);
-            $messages = $validator->errors();
-            if ($validator->fails()) 
-            {
-                $out = [
-                    "message" => $messages->first(),
-                    "code"   => 400
-                ];
-                return response()->json($out, $out['code']);
-            };
-            DB::beginTransaction();
-            try {
-                $data = [
-                    'status' => "PAID"
-                ];
-                $invoice = Invoice::where('id','=',$id);
-                $updateinvoice = $invoice->update($data);
-
-                //buat laporan pemasukan
-                $merchant_id = $invoice->max('merchant_id');
-                $invoicetotal = $invoice->max('total');
-                $invoicediscount = $invoice->max('discount');
-                $invoicetax = $invoice->max('tax');
-                $incometotal = $invoicetotal - ($invoicetotal * $invoicediscount / 100) + ($invoicetotal * $invoicetax / 100);
-                $information = $request->input('information');
-                $dataincome = [
-                    'merchant_id' => $merchant_id,
-                    'income_type_id' => 1,
-                    'invoice_id' => $id,
-                    'total' => $incometotal,
-                    'information' => $information
-                ];
-                $income = Income::create($dataincome);
-                DB::commit();
-                if($income){
-                    $out = [
-                        'message' => 'success',
-                        'code' => 200
-                    ];
-                }else{
-                    $out = [
-                        'message' => 'error',
-                        'code' => 400
-                    ];
-                };
-                return response() ->json($out,$out['code']);
-            } catch (\exception $e) {
-                DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
+        };
+    }
+
+    public function checkinvoice($invoice_id)
+    {
+        $invoice = Invoice::where('id','=',$invoice_id)
+        ->select('order_id','user_id','payment_id','status','discount','tax','total','phone_number','email')
+        ->get();
+
+        $out = [
+            "message" => "CheckInvoice($invoice_id) - Success",
+            "result" => $invoice
+        ];
+        return response()->json($out, 200);
+    }
+
+    public function checkout($invoice_id, Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'information' => 'nullable'                
+        ]);
+        $messages = $validator->errors();
+        if ($validator->fails()) 
+        {
+            $out = [
+                "message" => $messages->first()
+            ];
+            return response()->json($out, 200);
+        };
+        DB::beginTransaction();
+        try {
+            //ubah status invoice
+            $datainvoice = [
+                'status' => "PAID"
+            ];
+            $invoice = Invoice::where('id','=',$invoice_id);
+            $updateinvoice = $invoice->update($datainvoice);
+            //ubah status order
+            $dataorder = [
+                'status' => 'CLOSED'
+            ];
+            $order_id = $invoice->max('order_id');
+            $order = Order::where('id','=',$order_id);
+            $updateorder = $order->update($dataorder);
+
+            //buat laporan pemasukan
+            $merchant_id = $invoice->max('merchant_id');
+            $invoicetotal = $invoice->max('total');
+            $invoicediscount = $invoice->max('discount');
+            $invoicetax = $invoice->max('tax');
+            $invoice_paymentdiscount = Invoice::where('invoices.id','=',$invoice_id)
+            ->leftjoin('payments','payments.id','=','invoices.payment_id')
+            ->max('payments.discount');
+            $incometotal = $invoicetotal - $invoicediscount + $invoicetax - ($invoicetotal * $invoice_paymentdiscount / 100);
+            $information = $request->input('information');
+            $dataincome = [
+                'merchant_id' => $merchant_id,
+                'income_type_id' => 1,
+                'invoice_id' => $invoice_id,
+                'total' => $incometotal,
+                'information' => $information
+            ];
+            $income = Income::create($dataincome);
+
+            DB::commit();
+            $out = [
+                'message' => 'Checkout - Success'
+            ];                        
+            return response() ->json($out,200);
+        }catch (\exception $e) { //database tidak bisa diakses
+            DB::rollback();
+            $message = $e->getmessage();
+            $out  = [
+                "message" => $message
+            ];  
+            return response()->json($out,200);
         };
     }
 

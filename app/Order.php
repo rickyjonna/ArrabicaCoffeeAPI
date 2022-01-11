@@ -13,11 +13,11 @@ class Order extends Model implements AuthenticatableContract, AuthorizableContra
     use Authenticatable, Authorizable;
 
     protected $fillable = [
-        'merchant_id','table_id', 'user_id', 'vendor_id', 'status', 'information'
+        'id', 'merchant_id','table_id', 'user_id', 'vendor_id', 'status', 'information', 'note'
     ];
 
     protected $hidden = [
-        'id'
+        
     ];
 
 }

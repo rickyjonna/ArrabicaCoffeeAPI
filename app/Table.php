@@ -13,11 +13,11 @@ class Table extends Model implements AuthenticatableContract, AuthorizableContra
     use Authenticatable, Authorizable;
 
     protected $fillable = [
-        'merchant_id','number','extend'
+        'id','merchant_id','number','extend','status'
     ];
 
     protected $hidden = [
-        'id'
+        
     ];
 
 }   

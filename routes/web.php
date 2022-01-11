@@ -13,34 +13,40 @@
 |
 */
 
-$router->get('/', function () 
-{
-    return 
-    "<h1>WarkopMarbun</h1>
-    <p>     </p>
-    <p>Login</p>
-    <p>     </p>
-    <p>register</p>";
-});
-
+//page
+$router->get("/dashboard/{token}", "PageController@dashboard");
+$router->get("/orderlistlist/{id}", "PageController@orderlistlist");
+$router->get("/kitchen", "PageController@kitchen");
+$router->get("/cashier", "PageController@cashier");
+$router->get("/product", "PageController@product");
+$router->get("/addproduct", "PageController@addproduct");
+$router->get("/productcategory", "PageController@productcategory");
+$router->get("/agent", "PageController@agent");
+$router->get("/partner", "PageController@partner");
+$router->get("/table", "PageController@table");
+$router->get("/ingredient", "PageController@ingredient");
+$router->get("/payment", "PageController@payment");
+$router->get("/user", "PageController@user");
 //user
 $router->post("/register", "AuthController@register");
 $router->post("/login", "AuthController@login");
+$router->post("/logout", "AuthController@logout");
 $router->get("/listuser", "UserController@index");
-$router->patch("/updateuser/{id}", "UserController@update");
-$router->delete("/deleteuser/{id}", "UserController@destroy");
+$router->post("/updatepassword", "AuthController@updatepassword");
+$router->post("/updateuser/{id}", "UserController@update");
+$router->post("/deleteuser/{id}", "UserController@destroy");
 //product
 $router->post("/insertproduct", "ProductController@insertproduct");
 $router->get("/listproduct", "ProductController@index");
 $router->get("/listproduct/{categoryid}", "ProductController@indexbycategoryid");
 $router->get("/listproductalert", "ProductController@indexalert");
 $router->patch("/updateproduct/{id}", "ProductController@updateproduct");
-$router->delete("/deleteproduct/{id}", "ProductController@destroy");
+$router->post("/deleteproduct/{id}", "ProductController@destroy");
 //ingredient
 $router->get("/listingredient", "IngredientController@index");
 $router->post("/insertingredient", "IngredientController@insertingredient");
-$router->patch("/updateingredient/{id}", "IngredientController@updateingredient");
-$router->delete("/deleteingredient/{id}", "IngredientController@destroy");
+$router->post("/updateingredient/{id}", "IngredientController@updateingredient");
+$router->post("/deleteingredient/{id}", "IngredientController@destroy");
 //stock
 $router->get("/liststock", "ProductStockController@index");
 $router->patch("/updatestock/{id}", "ProductStockController@updatestock");
@@ -52,24 +58,26 @@ $router->delete("/deleteformula/{id}", "ProductFormulaController@destroy");
 //table
 $router->post("/inserttable", "TableController@inserttable");
 $router->get("/listtable", "TableController@index");
-$router->patch("/updatetable/{id}", "TableController@updatetable");
-$router->delete("/deletetable/{id}", "TableController@destroy");
+$router->post("/updatetable/{id}", "TableController@updatetable");
+$router->post("/deletetable/{id}", "TableController@destroy");
 //product category
 $router->post("/insertproductcategory", "ProductCategoryController@insertproductcategory");
 $router->get("/listproductcategory", "ProductCategoryController@index");
-$router->patch("/updateproductcategory/{id}", "ProductCategoryController@updateproductcategory");
-$router->delete("/deleteproductcategory/{id}", "ProductCategoryController@destroy");
+$router->post("/updateproductcategory/{id}", "ProductCategoryController@updateproductcategory");
+$router->post("/deleteproductcategory/{id}", "ProductCategoryController@destroy");
 //order
 $router->post("/insertorder", "OrderController@insertorder");
-$router->get("/listorder", "OrderController@index");
-//update order list
-$router->get("/listorderlist/{id}", "OrderListController@index");
-$router->patch("/updateorderlist/{id}", "OrderListController@updateorderlist"); 
-$router->patch("/updateorderliststatus/{id}", "OrderListController@updateorderliststatus"); 
-$router->delete("/deleteorderlist/{id}", "OrderListController@destroy");
+$router->get("/orderlist", "OrderController@index");
+//order list
+$router->post("/updateorderlist/{id}", "OrderListController@updateorderlist"); 
+$router->get("/sameproductordereddetail/{id}", "OrderListController@sameproductordereddetail");
+$router->post("/updateorderliststatus/{orderlist_id}", "OrderListController@updateorderliststatus"); 
+$router->post("/updateolsbyproductid", "OrderListController@updateolsbyproductid");
+$router->get("/deleteorderlist/{id}", "OrderListController@destroy");
 //invoice
-$router->post("/insertinvoice", "InvoiceController@insertinvoice"); //cetak invoice
-$router->patch("/updateinvoice/{id}", "InvoiceController@updateinvoice"); //bayar invoice
+$router->post("/insertinvoice", "InvoiceController@insertinvoice"); 
+$router->get("/checkinvoice/{invoice_id}", "InvoiceController@checkinvoice"); 
+$router->post("/checkout/{invoice_id}", "InvoiceController@checkout"); 
 $router->delete("/deleteinvoice/{id}", "InvoiceController@destroy");
 //income -> terakhir
 $router->get("/listincome", "IncomeController@index");
@@ -77,15 +85,15 @@ $router->delete("/deleteincome/{id}", "IncomeController@destroy");
 //partner (rekan)
 $router->post("/insertpartner", "PartnerController@insertpartner");
 $router->get("/listpartner", "PartnerController@index");
-$router->patch("/updatepartner/{id}", "PartnerController@updatepartner");
-$router->delete("/deletepartner/{id}", "PartnerController@destroy");
+$router->post("/updatepartner/{id}", "PartnerController@updatepartner");
+$router->post("/deletepartner/{id}", "PartnerController@destroy");
 //payment
 $router->post("/insertpayment", "PaymentController@insertpayment");
 $router->get("/listpayment", "PaymentController@index");
-$router->patch("/updatepayment/{id}", "PaymentController@updatepayment");
-$router->delete("/deletepayment/{id}", "PaymentController@destroy");
+$router->post("/updatepayment/{id}", "PaymentController@updatepayment");
+$router->post("/deletepayment/{id}", "PaymentController@destroy");
 //vendor (agen)
 $router->get("/listvendor", "VendorController@index");
 $router->post("/insertvendor", "VendorController@insertvendor");
-$router->patch("/updatevendor/{id}", "VendorController@updatevendor");
-$router->delete("/deletevendor/{id}", "VendorController@destroy");
+$router->post("/updatevendor/{id}", "VendorController@updatevendor");
+$router->post("/deletevendor/{id}", "VendorController@destroy");

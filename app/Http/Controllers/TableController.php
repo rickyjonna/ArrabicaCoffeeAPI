@@ -9,17 +9,11 @@ use Validator, Input, Redirect;
 
 class TableController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function inserttable(Request $request)
     {
         if ($request->isMethod('post')) 
         {
             $validator = Validator::make($request->all(), [
-                'merchant_id' => 'required|integer',
                 'number' => 'required|integer',
                 'extend' => 'required|integer'                
             ]);
@@ -28,58 +22,46 @@ class TableController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
             DB::beginTransaction();
             try {
                 //initialize
-                $merchant_id = $request->input('merchant_id');
                 $number = $request->input('number');      
                 $extend = $request->input('extend'); 
 
                 //making Table
                 $data = [
-                    'merchant_id' => $merchant_id,
+                    'merchant_id' => 1,
                     'number' => $number,
                     'extend' => $extend
                 ];
                 Table::create($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Meja Telah Dibuat",
-                    "results" => $data,
+                    "message" => "InsertTable - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            }catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
         };
     }
 
     public function updatetable($id, Request $request)
     {
-        if ($request->isMethod('patch')) 
+        if ($request->isMethod('post')) 
         {
             $validator = Validator::make($request->all(), 
             [
-                'merchant_id' => 'required|integer',
                 'number' => 'required|integer',
                 'extend' => 'required|integer'  
             ]);
@@ -88,7 +70,7 @@ class TableController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -96,7 +78,6 @@ class TableController extends Controller
             DB::beginTransaction();
             try {
                 //initialize
-                $merchant_id = $request->input('merchant_id');
                 $number = $request->input('number');
                 $extend = $request->input('extend'); 
 
@@ -110,39 +91,29 @@ class TableController extends Controller
                 $updatetable = $oldtable -> update($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Meja Telah Diperbaharui",
-                    "results" => $data,
+                    "message" => "EditTable - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            } catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
-            };       
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
+            };
         };
     }
 
     public function index()
     {
-        $getPost = Table::Select('number as Nomor_Meja', 'extend as Extend') 
-        ->OrderBy("id", "DESC")
+        $getPost = Table::Select('id','number', 'extend', 'status') 
+        ->OrderBy("number", "ASC")
         ->get();
 
         $out = [
-            "message" => "List Meja",
+            "message" => "Table List - Success",
             "results" => $getPost
         ];
         return response()->json($out, 200);
@@ -155,12 +126,12 @@ class TableController extends Controller
         if (!$table) {
             $data = [
                 "message" => "error / data not found",
-                "code" => 404
+                "code" => 200
             ];
         } else {
             $table->delete();
             $data = [
-                "message" => "success deleted",
+                "message" => "DeleteTable - Success",
                 "code" => 200
             ];
         };

@@ -22,7 +22,7 @@ class IncomeController extends Controller
         get();
 
         $out = [
-            "message" => "List Income",
+            "message" => "Success - List Income",
             "results" => $listincome ///PERCANTIK BUAT AKUNTANSI
         ];
 

@@ -15,12 +15,6 @@ use Validator, Input, Redirect;
 
 class ProductController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     // public function buatproduk()
     public function insertproduct(Request $request)
     {
@@ -45,10 +39,9 @@ class ProductController extends Controller
             $messages = $validator->errors();
             if ($validator->fails()) {
                 $out = [
-                    "message" => $messages->first(),
-                    "code"   => 400
+                    "message" => $messages->first()
                 ];
-            return response()->json($out, $out['code']);
+            return response()->json($out, 200);
             };   
 
             DB::beginTransaction();
@@ -83,24 +76,14 @@ class ProductController extends Controller
                 ];               
                 return response()->json($out,200);
                 
-            } catch (\exception $e){
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                    ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
-            }; 
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
+            };
         };
     }
 
@@ -269,26 +252,22 @@ class ProductController extends Controller
 
     public function index()
     {
-        $categoryproduct = Product_category::get();
-
         $listproduct = Product::leftjoin('product_stock', 'product_stock.product_id', '=', 'products.id')
         ->leftjoin('product_category', 'products.product_category_id', '=', 'product_category.id')
-        ->addselect('products.id','products.name as Nama')
-        ->selectRaw('CONCAT("Rp ", price) as Harga')
-        ->addselect('discount as Diskon')
-        ->selectRaw('CONCAT("Rp ", (price - price*discount/100)) as Harga_Total')
-        ->addselect(DB::raw('(CASE WHEN amount is null THEN "Tidak Ada" ELSE amount END) as Total_Stock'))
-        ->addselect('product_category.id as Kategori') 
+        ->addselect('products.id','products.name', 'products.price')
+        ->addselect('discount')
+        ->selectRaw('price - price*discount/100 as total_price')
+        ->addselect(DB::raw('(CASE WHEN amount is null THEN null ELSE amount END) as total_stock'))
+        ->addselect('product_category.information as category') 
         ->where("products.editable", "=", "1")
         ->OrderBy("products.id", "ASC")
         ->get();
         
         $out = [
-            "Category" => $categoryproduct , 
-            "Product" => $listproduct,
-            "code" => 200
+            "message" => "List Produk Sukses",
+            "result" => $listproduct
         ];
-        return response()->json($out, $out['code']);
+        return response()->json($out, 200);
     }
 
     public function indexbycategoryid($categoryid)
@@ -339,16 +318,14 @@ class ProductController extends Controller
 
         if (!$product) {
             $data = [
-                "message" => "error / data not found",
-                "code" => 404
+                "message" => "Product - NotFound"
             ];
         } else {
             $product->delete();
             $data = [
-                "message" => "success deleted",
-                "code" => 200
+                "message" => "Delete - Product - Success"
             ];
         };
-        return response()->json($data, $data['code']);
+        return response()->json($data, 200);
     }
 } 

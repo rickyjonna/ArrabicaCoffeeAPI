@@ -31,9 +31,9 @@ class LoginMiddleware
         } catch (\exception $e) {
             $errorcode = $e->getcode();
             $errormessage = $e->getmessage();
-            $errormessage = substr($errormessage, 22, 75); // harusnya lebih dinamis << karena erornya sekarang cuma buat mati lamput jadi gpp
+            $errormessage = substr($errormessage, 23, 75); // harusnya lebih dinamis << karena erornya sekarang cuma buat mati lamput jadi gpp
             $out = [
-                "message" => $errorcode.$errormessage,
+                "message" => $errorcode."-".$errormessage,
                 "code"    => 400
             ];
             return response()->json($out, $out['code']); 

@@ -9,11 +9,6 @@ use Validator, Input, Redirect;
 
 class PaymentController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware("login");
-    }
-
     public function insertpayment(Request $request)
     {
         if ($request->isMethod('post')) 
@@ -28,7 +23,7 @@ class PaymentController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -47,26 +42,17 @@ class PaymentController extends Controller
                 $insert = Payment::create($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Pembayaran Berhasil Dibuat",
+                    "message" => "InsertPayment - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            } catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
         };
     }
@@ -87,7 +73,7 @@ class PaymentController extends Controller
 
     public function updatepayment($id, Request $request)
     {
-        if ($request->isMethod('patch')) 
+        if ($request->isMethod('post')) 
         {
             $validator = Validator::make($request->all(), 
             [
@@ -99,7 +85,7 @@ class PaymentController extends Controller
             {
                 $out = [
                     "message" => $messages->first(),
-                    "code"   => 400
+                    "code"   => 200
                 ];
                 return response()->json($out, $out['code']);
             };
@@ -119,26 +105,17 @@ class PaymentController extends Controller
                 $updatepayment = $oldpayment -> update($data);
                 DB::commit();
                 $out  = [
-                    "message" => "Pembayaran Berhasil Diperbaharui",
+                    "message" => "EditPayment - Success",
                     "code"  => 200
                 ];
                 return response()->json($out, $out['code']);
-            } catch (\exception $e) {
+            }catch (\exception $e) { //database tidak bisa diakses
                 DB::rollback();
-                $errorcode = $e->getcode();
                 $message = $e->getmessage();
-                if ($e instanceof \PDOException){ //dikarenakan kalau ada inputan empty mengakibatkan $e tidak catch apa2(kosong) maka dibuat code ini << belum
-                    $out = [
-                        "message" => $message,
-                        "code" => 400
-                        ];
-                } else {
-                    $out = [
-                        "message" => "Error, Ada Inputan Kosong",
-                        "code" => 400
-                    ];
-                };
-                return response()->json($out,$out['code']);
+                $out  = [
+                    "message" => $message
+                ];  
+                return response()->json($out,200);
             };
         };
     }
@@ -150,12 +127,12 @@ class PaymentController extends Controller
         if (!$payment) {
             $data = [
                 "message" => "error / data not found",
-                "code" => 404
+                "code" => 200
             ];
         } else {
             $payment->delete();
             $data = [
-                "message" => "success deleted",
+                "message" => "DeletePayment - Success",
                 "code" => 200
             ];
         };
